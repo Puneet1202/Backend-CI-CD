@@ -22,7 +22,6 @@
     "nodemon": "^3.1.14"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "jest": "^30.2.0"
+    "husky": "^9.1.7"
   }
 }
