@@ -1,0 +1,13 @@
+name: Backend_Safety_Check       # Pipeline ka naam
+on: [push, pull_request]        # Kab chalega? Jab push ya PR ho
+
+jobs:
+  check-backend:                # Ek job ka naam
+    runs-on: ubuntu-latest      # Konsa computer chahiye? (Linux)
+    steps:
+      - uses: actions/checkout@v4   # Step 1: GitHub se code uthao
+      - uses: actions/setup-node@v4 # Step 2: Node.js install karo
+        with:
+          node-version: '20'
+      - run: npm install            # Step 3: Packages install karo
+      - run: npm test               # Step 4: Tests chalao (Sabse imp!)
