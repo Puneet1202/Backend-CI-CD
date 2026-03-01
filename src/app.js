@@ -24,7 +24,7 @@ import postmodel from './models/post.model.js';
     const post = await  postModel.create({
       image : result.url,
       caption : req.body.caption
-    })
+    }) 
     console.log(  "Post created:",post);
     return res.status(201).json({
       message:"post created successfully",
@@ -118,38 +118,51 @@ import postmodel from './models/post.model.js';
 
    
  })
+app.put('/update-post/:id', upload.single('image'), async (req, res, next) => {
+   try {
+      const { id } = req.params;
+      const { caption } = req.body;
 
-app.put('/update-post/:id',upload.single('image'),async(req,res)=>{
-   const {id}=req.params;
-   console.log("Body:",req.body);
-
-   if(!isValidObjectId(id)){
-      return res.status(400).json({
-         status:"failed",
-         message:"Invalid post id"
-      })
+      if (!isValidObjectId(id)) {
+         return res.status(400).json({ status: "failed", message: "Invalid post id" });
       }
 
-      const post = await postModel.findById(id);
+      // 1. Image handling thoda saaf karo
+      let imageUrl;
+      if (req.file) {
+         const result = await uploadFile(req.file.buffer);
+         imageUrl = result.url; // <-- Yahan .url lena zaroori hai
+      }
 
-      if(!post || req.body.caption === undefined){
+      // 2. Database Update
+      const post = await postModel.findByIdAndUpdate(id,
+         {
+            caption: caption,
+            // Agar imageUrl hai toh naya dalo, warna purana hi rehne do
+            ...(imageUrl && { image: imageUrl }) 
+         },
+         { new: true }
+      );
+
+      if (!post) {
          return res.status(404).json({
-            status:"failed",
-            message:"Post not found or caption is missing"
-         })
+            status: "failed",
+            message: "Post database se chali gayi hai ya delete ho chuki hai!"
+         });
       }
-      
 
-
-
-
+      // 3. Success Response (Ye aapne miss kiya tha)
       return res.status(200).json({
-         status:"success",
-         message:"Post updated successfully"
-      })
-})
+         status: "success",
+         message: "Post updated successfully",
+         post: post
+      });
 
-
+   } catch (err) {
+      // Ye line aapke Global Error Handler ko trigger karegi
+      next(err); 
+   }
+});
 
 // Ye line saare app.get/app.post ke niche honi chahiye
 app.use((req, res) => {
@@ -159,10 +172,17 @@ app.use((req, res) => {
     });
 });
 
-app.use((err, req, res, next) => {
-    res.status(500).json({ msg: "Server phat gaya!" });
-});
+app.use((err,req,res,next)=>{
+  console.error("🚨 Error occurred:", err.stack);
 
+  const  statusCode = err.statusCode || 500;
+
+  res.status(statusCode).json({
+    status: "error",
+    message: err.message || "Internal Server Error",
+   stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});   
 
 
  export default app;
