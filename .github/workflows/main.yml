@@ -1,13 +1,32 @@
-name: Backend_Safety_Check       # Pipeline ka naam
-on: [push, pull_request]        # Kab chalega? Jab push ya PR ho
+name: Backend_Safety_Check
+
+on: [push, pull_request]
 
 jobs:
-  check-backend:                # Ek job ka naam
-    runs-on: ubuntu-latest      # Konsa computer chahiye? (Linux)
+  check-backend:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4   # Step 1: GitHub se code uthao
-      - uses: actions/setup-node@v4 # Step 2: Node.js install karo
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install            # Step 3: Packages install karo
-      - run: npm test               # Step 4: Tests chalao (Sabse imp!)
+      - name: Install dependencies
+        working-directory: ./Backend 
+        run: npm install
+      - name: Run Tests
+        working-directory: ./Backend
+        run: npm test
+
+  check-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Frontend
+        working-directory: ./Frontend
+        run: npm install
+      - name: Build Check
+        working-directory: ./Frontend
+        run: npm run build
