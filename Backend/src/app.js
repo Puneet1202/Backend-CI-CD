@@ -4,9 +4,11 @@ import uploadFile from  './services/storage.service.js';
 import postModel from './models/post.model.js';
 import { isValidObjectId } from 'mongoose';
 import postmodel from './models/post.model.js';
+import cors from 'cors';
 
 
  const app = express();
+ app.use(cors());
 
  app.use(express.json());
  app.use(express.urlencoded({ extended: true }));
